@@ -1,0 +1,42 @@
+
+syntax = "proto3";
+option go_package = "./proto-books";
+
+message BookItem {
+    optional int64 id = 1;
+    optional string name = 2;
+    optional string bookId = 3;
+}
+
+message BookItems {
+    repeated BookItem data = 1;
+}
+
+service Book {
+    rpc CreateBook(CreateBookRequest) returns (BookResponse) {} 
+	rpc UpdateBook(UpdateBookRequest) returns  (BookResponse) {}
+	rpc ListBooks(EmptyRequest) returns (BookResponse) {}
+	rpc DeleteBook(DeleteBookRequest) returns (BookResponse) {}
+}
+
+message BookResponse {
+    optional string status = 1;
+    optional int64 statusCode = 2;
+    optional string message = 3;
+    optional BookItems data = 4;
+}
+
+message CreateBookRequest {
+    optional string name = 1;
+    optional string bookId = 2;
+}
+
+message UpdateBookRequest {
+    optional BookItem bookData = 1;
+}
+
+message DeleteBookRequest {
+    optional int64 bookId = 1;
+}
+
+message EmptyRequest {}
