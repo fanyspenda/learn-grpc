@@ -1,44 +1,35 @@
 package main
 
 import (
-	"flag"
+	"database/sql"
 	"fmt"
 	"learn-grpc/modules/books"
 	proto_books "learn-grpc/modules/books/proto-books"
 	"log"
 	"net"
-	"sync"
 
 	"google.golang.org/grpc"
 )
 
 func main() {
-	flag.Parse()
-	lis, err := net.Listen("tcp", fmt.Sprintf("localhost:8090"))
-	if err != nil {
-		log.Fatalf("failed to listen: %v", err)
-	}
-
-	var group sync.WaitGroup
 
 	var opts []grpc.ServerOption
 	grpcServer := grpc.NewServer(opts...)
 
-	proto_books.RegisterBookServer(grpcServer, books.NewBookServer())
+	proto_books.RegisterBookServer(grpcServer, books.NewBookServer(
+		&sql.DB{},
+	))
 
-	go func() {
-		group.Add(1)
-		err = grpcServer.Serve(lis)
-		group.Done()
-	}()
+	lis, err := net.Listen("tcp", fmt.Sprintf("localhost:8090"))
+	if err != nil {
+		log.Fatalf("failed to listen: %v", err)
+		return
+	}
 
-	group.Wait()
-
+	// this function is only return if error happened
+	log.Println("starting server on localhost:8090...")
+	err = grpcServer.Serve(lis)
 	if err != nil {
 		log.Fatalf("failed to start Server: %v", err)
 	}
-
-	fmt.Println("success starting gRPC server")
-
-	<-make(chan bool, 1)
 }
